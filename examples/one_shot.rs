@@ -144,8 +144,7 @@ fn setup(
                                 },
                             ))
                             .observe(
-                                |trigger: Trigger<ParticleSpawnerFinished>,
-                                 mut commands: Commands| {
+                                |trigger: On<ParticleSpawnerFinished>, mut commands: Commands| {
                                     commands.entity(trigger.target()).despawn();
                                 },
                             );

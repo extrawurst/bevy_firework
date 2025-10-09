@@ -2,6 +2,7 @@ use crate::plugin::PARTICLE_SHADER_HANDLE;
 
 use super::core::{ParticleData, ParticleSpawner, ParticleSpawnerData};
 use bevy::{
+    camera::{primitives::Aabb, visibility::RenderLayers},
     core_pipeline::{
         core_3d::{CORE_3D_DEPTH_FORMAT, Transparent3d},
         prepass::{
@@ -9,16 +10,14 @@ use bevy::{
         },
     },
     ecs::system::{SystemParamItem, lifetimeless::*},
-    pbr::{
-        MeshPipeline, MeshPipelineKey, RenderMeshInstances, SetMeshViewBindGroup,
-        ShadowFilteringMethod,
-    },
+    light::ShadowFilteringMethod,
+    mesh::VertexBufferLayout,
+    pbr::{MeshPipeline, MeshPipelineKey, RenderMeshInstances, SetMeshViewBindGroup},
     platform::collections::HashMap,
     prelude::*,
     render::{
-        Extract, Render, RenderApp, RenderSet,
+        Extract, Render, RenderApp, RenderSystems,
         extract_component::{ComponentUniforms, DynamicUniformIndex, UniformComponentPlugin},
-        primitives::Aabb,
         render_asset::RenderAssets,
         render_phase::{
             AddRenderCommand, DrawFunctions, PhaseItem, PhaseItemExtraIndex, RenderCommand,
@@ -28,7 +27,7 @@ use bevy::{
         renderer::RenderDevice,
         sync_world::MainEntity,
         texture::GpuImage,
-        view::{ExtractedView, RenderLayers, ViewTarget},
+        view::{ExtractedView, ViewTarget},
     },
 };
 use bytemuck::{Pod, Zeroable};
@@ -55,9 +54,9 @@ impl Plugin for CustomMaterialPlugin {
                 (
                     ensure_dummy_textures_exist,
                     (
-                        queue_custom.in_set(RenderSet::QueueMeshes),
-                        prepare_instance_buffers.in_set(RenderSet::PrepareResources),
-                        prepare_firework_bindgroup.in_set(RenderSet::PrepareBindGroups),
+                        queue_custom.in_set(RenderSystems::QueueMeshes),
+                        prepare_instance_buffers.in_set(RenderSystems::PrepareResources),
+                        prepare_firework_bindgroup.in_set(RenderSystems::PrepareBindGroups),
                     ),
                 )
                     .chain(),
@@ -702,7 +701,7 @@ fn update_aabbs(mut query: Query<(&mut Aabb, &GlobalTransform, &ParticleSpawnerD
         let center = (min + max) / 2.;
         let half_extents = (max - min) / 2.;
         aabb.center = global_transform
-            .compute_matrix()
+            .to_matrix()
             .inverse()
             .transform_point3(center)
             .into();
@@ -833,7 +832,7 @@ impl SpecializedRenderPipeline for FireworkPipeline {
                 // we need to add MESH_BINDGROUP_1 shader def so that the bindings are correctly
                 // linked in the shader
                 shader_defs,
-                entry_point: "fragment".into(),
+                entry_point: Some("fragment".into()),
                 targets: vec![Some(ColorTargetState {
                     format,
                     blend: Some(BlendState::ALPHA_BLENDING),

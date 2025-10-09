@@ -1,6 +1,6 @@
 [package]
 name = "bevy_firework"
-version = "0.7.0"
+version = "0.8.0"
 edition = "2024"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
@@ -9,7 +9,7 @@ description = "CPU-driven, batch-rendered particle system for the Bevy game engi
 keywords = ["bevy", "gamedev", "particles", "graphics"]
 
 [dependencies]
-bevy = { version = "0.16", default-features = false, features = [
+bevy = { version = "0.17", default-features = false, features = [
     "bevy_render",
     "bevy_core_pipeline",
     "bevy_pbr",
@@ -19,17 +19,12 @@ bevy = { version = "0.16", default-features = false, features = [
 ] }
 bytemuck = "1.14.3"
 rand = "0.9.1"
-bevy_utilitarian = "0.7"
+bevy_utilitarian = "0.8"
 serde = { version = "1.0", features = ["derive"] }
-avian3d = { version = "0.3", features = ["serialize"], optional = true }
+avian3d = { version = "0.4.0-dev", features = ["serialize"], optional = true }
 
 [dev-dependencies]
-bevy = { version = "0.16", default-features = false, features = [
-    "bevy_text",
-    "bevy_ui",
-    "default_font",
-    "png",
-] }
+bevy = { version = "0.17" }
 
 [features]
 default = ["physics_avian"]
@@ -54,3 +49,6 @@ required-features = ["physics_avian"]
 [[example]]
 name = "stress_test_collision"
 required-features = ["physics_avian"]
+
+[patch.crates-io]
+avian3d = {git="https://github.com/Jondolf/avian.git"}
